@@ -1,4 +1,4 @@
-package com.mhs;
+package com.mhs.rdd;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkConf;
@@ -15,25 +15,28 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-public class DemoApplication {
+public class BaseRdd {
     public static final String master = "local";
-
     public static void main(String[] args) {
 
         // 创建一个Java版本的Spark Context
         SparkConf conf = new SparkConf().setAppName("wordCount").setMaster(master);
         JavaSparkContext sc = new JavaSparkContext(conf);
         // 读取我们的输入数据
-        JavaRDD<String> input = sc.textFile("D:\\git\\demo\\src\\main\\resources\\res.txt");
+        JavaRDD<String> input = sc.textFile("/Users/mac/IdeaProjects/demo/src/main/resources/res.txt");
 
         JavaRDD<Integer> rdd = sc.parallelize(Arrays.asList(1, 2, 3, 4));
         JavaRDD<Integer> result = rdd.map(s -> s * s);
         JavaRDD<String> unio=input.union(rdd.map(s->s+""));
         System.out.println(StringUtils.join(result.collect(), ","));
-         //笛卡尔积 相似度时
+        //笛卡尔积 相似度时
         JavaPairRDD<Integer, String> dkr= result.cartesian(input);
         List<Tuple2<Integer, String>> list=dkr.collect();
-        System.out.println("Tuple2"+list.toArray().toString());
+        for (Tuple2 tuple2:list){
+            System.out.println("Tuple2_1"+tuple2._1);
+            System.out.println("Tuple2_2"+tuple2._2);
+        }
+
         // 切分为单词
         JavaRDD<String> words = input.flatMap(
                 new FlatMapFunction<String, String>() {
